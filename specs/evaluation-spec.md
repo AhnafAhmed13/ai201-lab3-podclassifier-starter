@@ -44,8 +44,9 @@ Returns the fraction of predictions that exactly match the ground truth.
 **Formula:**
 
 ```
-[blank — write out the accuracy formula in plain English.
- What counts as "correct"? What do you divide by?]
+Accuracy = (number of correct predictions) / (total number of predictions)
+A prediction is correct when predictions[i] == ground_truth[i].
+Divide by the total number of episodes (len of either list).
 ```
 
 ---
@@ -53,10 +54,11 @@ Returns the fraction of predictions that exactly match the ground truth.
 **Step-by-step logic:**
 
 ```
-[blank — describe the steps your code will take.
- 1. ...
- 2. ...
- 3. ...]
+1. If predictions is empty, return 0.0 (avoids dividing by zero).
+2. Initialize correct = 0.
+3. Loop over pairs (predicted, truth) with zip(predictions, ground_truth).
+4. If predicted == truth, increment correct.
+5. Return correct / len(predictions).
 ```
 
 ---
@@ -64,7 +66,7 @@ Returns the fraction of predictions that exactly match the ground truth.
 **Edge case — what if both lists are empty?**
 
 ```
-[blank — what should the function return? Why?]
+Return 0.0. There is nothing to score and dividing by 0 would raise an error.
 ```
 
 ---
@@ -75,7 +77,12 @@ Returns the fraction of predictions that exactly match the ground truth.
 predictions  = ["interview", "solo", "panel", "interview"]
 ground_truth = ["interview", "solo", "solo",  "narrative"]
 
-[blank — what does compute_accuracy() return for these inputs? Show your work.]
+  interview == interview  → correct
+  solo      == solo       → correct
+  panel     != solo       → wrong
+  interview != narrative  → wrong
+
+correct = 2, total = 4  →  2 / 4 = 0.5
 ```
 
 ---
@@ -113,8 +120,8 @@ A `dict` keyed by label. Each value is a dict with three keys:
 **What does "correct" mean for a given class?**
 
 ```
-[blank — be precise. When does an episode count as correctly classified
- for the "interview" class, for example?]
+For class "interview": the ground-truth label is "interview" AND the prediction
+also equals "interview". In general, truth == label AND predicted == truth.
 ```
 
 ---
@@ -122,7 +129,8 @@ A `dict` keyed by label. Each value is a dict with three keys:
 **What does "total" mean for a given class?**
 
 ```
-[blank — is "total" the total number of predictions, or something more specific?]
+The number of episodes whose ground_truth label equals that class — not the
+total number of predictions. (It's the count of true examples of the class.)
 ```
 
 ---
@@ -130,12 +138,14 @@ A `dict` keyed by label. Each value is a dict with three keys:
 **Step-by-step logic:**
 
 ```
-[blank — describe the steps your code will take.
- 1. Initialize ...
- 2. Loop over ...
- 3. For each pair (predicted, truth) ...
- 4. After the loop ...
- 5. Return ...]
+1. Initialize a dict with {"correct": 0, "total": 0, "accuracy": 0.0} for each
+   label in VALID_LABELS.
+2. Loop over pairs (predicted, truth) with zip(predictions, ground_truth).
+3. For each pair: increment stats[truth]["total"]; if predicted == truth,
+   increment stats[truth]["correct"].
+4. After the loop, for each label set accuracy = correct / total, or 0.0 if
+   total == 0.
+5. Return the dict.
 ```
 
 ---
@@ -143,8 +153,7 @@ A `dict` keyed by label. Each value is a dict with three keys:
 **Edge case — what if a class has no examples in ground_truth (total == 0)?**
 
 ```
-[blank — what should accuracy be set to? Why?
- Hint: look at the docstring in evaluate.py.]
+accuracy = 0.0, to avoid dividing by zero (matches the docstring in evaluate.py).
 ```
 
 ---
@@ -155,14 +164,12 @@ A `dict` keyed by label. Each value is a dict with three keys:
 predictions  = ["interview", "interview", "solo", "panel", "panel"]
 ground_truth = ["interview", "solo",      "solo", "panel", "narrative"]
 
-[blank — fill in the per-class results table below]
-
 label       correct  total  accuracy
 ----------  -------  -----  --------
-interview   [blank]  [blank]  [blank]
-solo        [blank]  [blank]  [blank]
-panel       [blank]  [blank]  [blank]
-narrative   [blank]  [blank]  [blank]
+interview   1        1      1.0
+solo        1        2      0.5
+panel       1        1      1.0
+narrative   0        1      0.0
 ```
 
 ---
