@@ -91,10 +91,8 @@ the format below:" followed by the output format you chose.
 **What output format should you request from the LLM?**
 
 ```
-[blank — you need to parse the response in classify_episode(). What format
-makes parsing reliable? Think about: a single label on its own line?
-A structured format like "Label: X / Reasoning: Y"? JSON?
-What are the tradeoffs?]
+Label: <one of interview, solo, panel, narrative — lowercase, exactly as written>
+Reasoning: <one or two sentences>
 ```
 
 ---
@@ -102,8 +100,9 @@ What are the tradeoffs?]
 **Edge cases to handle in the prompt:**
 
 ```
-[blank — what if labeled_examples is empty? What if the description is very
-short? How does your prompt handle these?]
+If labeled_examples is empty, skip the examples section and send a zero-shot
+prompt (task instructions + label definitions only). If the description is
+very short or empty, send it as-is and let the model classify on what it has.
 ```
 
 ---
@@ -159,9 +158,10 @@ Extract the response text from:
 **Step 3 — Parse the response:**
 
 ```
-[blank — how do you extract the label and reasoning from the LLM's text output?
-What string operations or parsing logic do you need?
-This depends on the output format you chose in build_few_shot_prompt.]
+Split the response into lines. Find the line starting with "Label:" and the
+line starting with "Reasoning:" (case-insensitive). Strip the prefix and
+whitespace, and lowercase the label. If no "Reasoning:" line is found, use
+an empty string or the leftover text.
 ```
 
 ---
@@ -169,8 +169,8 @@ This depends on the output format you chose in build_few_shot_prompt.]
 **Step 4 — Validate the label:**
 
 ```
-[blank — what do you do if the LLM returns a label that isn't in VALID_LABELS?
-What should label be set to?]
+Check the parsed label against VALID_LABELS. If it isn't in the list, set
+label to "unknown" (keep the reasoning text).
 ```
 
 ---
@@ -178,9 +178,9 @@ What should label be set to?]
 **Step 5 — Handle errors gracefully:**
 
 ```
-[blank — what could go wrong? (Network error? Unparseable response?)
-What should the function return if something fails?
-Hint: the evaluation loop runs 20 calls — one bad response shouldn't crash everything.]
+Wrap the API call and parsing in a try/except. On any failure (network error,
+unparseable response), return {"label": "unknown", "reasoning": "<error message>"}
+so a single bad response never crashes the evaluation loop.
 ```
 
 ---
