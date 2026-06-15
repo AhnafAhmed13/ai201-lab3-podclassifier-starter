@@ -58,7 +58,14 @@ def compute_accuracy(predictions: list[str], ground_truth: list[str]) -> float:
 
     Before writing code, complete specs/evaluation-spec.md.
     """
-    return 0.0
+    if not predictions:
+        return 0.0
+
+    correct = 0
+    for predicted, truth in zip(predictions, ground_truth):
+        if predicted == truth:
+            correct += 1
+    return correct / len(predictions)
 
 
 def compute_per_class_accuracy(
@@ -83,7 +90,18 @@ def compute_per_class_accuracy(
 
     Before writing code, complete specs/evaluation-spec.md.
     """
-    return {label: {"correct": 0, "total": 0, "accuracy": 0.0} for label in VALID_LABELS}
+    stats = {label: {"correct": 0, "total": 0, "accuracy": 0.0} for label in VALID_LABELS}
+
+    for predicted, truth in zip(predictions, ground_truth):
+        stats[truth]["total"] += 1
+        if predicted == truth:
+            stats[truth]["correct"] += 1
+
+    for label in stats:
+        total = stats[label]["total"]
+        stats[label]["accuracy"] = stats[label]["correct"] / total if total else 0.0
+
+    return stats
 
 
 def format_evaluation_report(eval_results: dict) -> str:
